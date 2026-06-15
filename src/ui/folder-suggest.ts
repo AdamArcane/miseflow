@@ -28,7 +28,7 @@ export class FolderSuggest extends AbstractInputSuggest<TFolder> {
 
 	selectSuggestion(folder: TFolder): void {
 		this.setValue(folder.path);
-		this.onPick?.(folder.path);
+		void this.onPick?.(folder.path);
 		this.close();
 	}
 }
@@ -56,7 +56,7 @@ export class FileSuggest extends AbstractInputSuggest<TFile> {
 
 	selectSuggestion(file: TFile): void {
 		this.setValue(file.path);
-		this.onPick?.(file.path);
+		void this.onPick?.(file.path);
 		this.close();
 	}
 }
