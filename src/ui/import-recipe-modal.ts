@@ -123,8 +123,7 @@ export class ImportRecipeModal extends Modal {
 	private renderUrlForm(form: HTMLElement): void {
 		new Setting(form)
 			.setName("Recipe URL")
-			// eslint-disable-next-line obsidianmd/ui/sentence-case
-			.setDesc("Paste the URL of a recipe page or cooking video (YouTube, TikTok).")
+			.setDesc("Paste the URL of a recipe page or cooking video (YouTube, TikTok)")
 			.addText((t) =>
 				t
 					.setPlaceholder("https://www.example.com/recipes/…")
@@ -287,8 +286,7 @@ export class ImportRecipeModal extends Modal {
 		// Action buttons
 		new Setting(contentEl)
 			.addButton((btn) =>
-				// eslint-disable-next-line obsidianmd/ui/sentence-case
-				btn.setButtonText("← Back").onClick(() => {
+				btn.setButtonText("← back").onClick(() => {
 					this.stage = "input";
 					this.renderContent();
 				}),
