@@ -47,6 +47,14 @@ export interface MiseFlowSettings {
 	showMarkCookedButton: boolean;
 	/** When true, clicking "Mark as cooked" prompts for a date instead of using today. */
 	markCookedAskDate: boolean;
+	/** When true, appends a dated entry to a cook history section in the note body each time it's marked as cooked. */
+	trackCookHistory: boolean;
+	/** Heading name used for the cook history section in the note body. */
+	cookHistoryHeading: string;
+	/** When true, the mark-as-cooked modal includes a notes field whose text is appended to the history entry. */
+	cookHistoryPromptNotes: boolean;
+	/** When true, the mark-as-cooked modal includes an image picker; the image is embedded in the history entry. */
+	cookHistoryTrackImages: boolean;
 	/** When true, writes today's date to a recipe's frontmatter when it's added to the grocery list. */
 	trackLastMade: boolean;
 	/** Frontmatter property name used to record the last time a recipe was added to the grocery list. */
@@ -175,6 +183,10 @@ export const DEFAULT_SETTINGS: MiseFlowSettings = {
 	showJumpBar: true,
 	showMarkCookedButton: true,
 	markCookedAskDate: false,
+	trackCookHistory: false,
+	cookHistoryHeading: "Cook History",
+	cookHistoryPromptNotes: true,
+	cookHistoryTrackImages: false,
 	trackLastMade: true,
 	lastMadeProperty: "lastMade",
 	trackCookedCount: true,

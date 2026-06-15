@@ -1,10 +1,12 @@
 import {
+	MarkdownView,
 	Menu,
 	Plugin,
 	TAbstractFile,
 	TFile,
 	WorkspaceLeaf,
 	debounce,
+	setIcon,
 } from "obsidian";
 import { registerCommands } from "./commands";
 import { GroceryListManager, SaveSink } from "./grocery/manager";
@@ -121,6 +123,17 @@ export default class MiseFlowPlugin extends Plugin {
 			),
 		);
 
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", () => {
+				this.refreshMarkdownRecipeButtons();
+			}),
+		);
+		this.registerEvent(
+			this.app.workspace.on("file-open", () => {
+				this.refreshMarkdownRecipeButtons();
+			}),
+		);
+
 		this.addSettingTab(new MiseFlowSettingsTab(this, {
 			app: this.app,
 			settings: this.settings,
@@ -230,6 +243,54 @@ export default class MiseFlowPlugin extends Plugin {
 			state: { file: file.path, mode: "source" },
 			active: true,
 		});
+	}
+
+	private refreshMarkdownRecipeButtons(): void {
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			leaf.view.containerEl.querySelector(".mise-markdown-recipe-btn")?.remove();
+
+			if (leaf.view.getViewType() !== "markdown") return;
+			const file = (leaf.view as MarkdownView).file;
+			if (!file || !this.isRecipeFile(file)) return;
+
+			const actionsEl = leaf.view.containerEl.querySelector(".view-actions");
+			if (!actionsEl) return;
+
+			const btn = createEl("button", {
+				cls: "view-action clickable-icon mise-markdown-recipe-btn",
+				attr: { "aria-label": "Recipe view" },
+			});
+			setIcon(btn, "chef-hat");
+			btn.addEventListener("click", () => {
+				void leaf.setViewState({
+					type: VIEW_TYPE_RECIPE,
+					state: { file: file.path },
+					active: true,
+				});
+			});
+			const lastBtn = actionsEl.lastElementChild;
+			if (lastBtn) {
+				actionsEl.insertBefore(btn, lastBtn);
+			} else {
+				actionsEl.appendChild(btn);
+			}
+		});
+	}
+
+	private isRecipeFile(file: TFile): boolean {
+		if (file.extension !== "md") return false;
+		const cache = this.app.metadataCache.getFileCache(file);
+		const fm = (cache?.frontmatter ?? {}) as Record<string, unknown>;
+		const typeValue = fm[RECIPE_FRONTMATTER.type];
+		const target = normalizeRecipeTypeToken(this.settings.recipeTypeValue);
+		if (target) return frontmatterTypeMatches(typeValue, target);
+		if (this.settings.recipeFolders.length > 0) {
+			return this.settings.recipeFolders.some((folder) => {
+				const prefix = folder.endsWith("/") ? folder : folder + "/";
+				return file.path.startsWith(prefix);
+			});
+		}
+		return false;
 	}
 
 	private maybeAddRecipeModeMenuItem(

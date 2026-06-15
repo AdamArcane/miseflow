@@ -8,7 +8,7 @@ import {
 	setIcon,
 	EventRef,
 } from "obsidian";
-import { stampRecipeCooked } from "../grocery/selection";
+import { appendCookHistoryEntry, stampRecipeCooked } from "../grocery/selection";
 import { GroceryContribution } from "../grocery/note-writer";
 import { isHighGi, parseGiDictionary } from "../parser/glycemic";
 import {
@@ -43,7 +43,7 @@ import {
 	MiseFlowSettings,
 	RECIPE_FRONTMATTER,
 } from "../settings";
-import { MarkCookedModal } from "./mark-cooked-modal";
+import { MarkCookedModal, SelectedImage } from "./mark-cooked-modal";
 import { AddToMealPlanModal } from "./add-to-meal-plan-modal";
 import { AddToGroceryModal } from "./add-to-grocery-modal";
 
@@ -966,8 +966,15 @@ export class RecipeView extends TextFileView {
 					const a = tagsEl.createEl("a", { cls: "tag", text, href: `#${tag}` });
 					a.addEventListener("click", (e) => {
 						e.preventDefault();
-						// eslint-disable-next-line @typescript-eslint/no-explicit-any
-						(this.app as any).internalPlugins?.getPluginById("global-search")?.instance?.openGlobalSearch(`tag:#${tag}`);
+						interface AppWithSearch {
+							internalPlugins?: {
+								getPluginById(id: string): { instance?: { openGlobalSearch(q: string): void } } | undefined;
+							};
+						}
+						(this.app as unknown as AppWithSearch).internalPlugins
+							?.getPluginById("global-search")
+							?.instance
+							?.openGlobalSearch(`tag:#${tag}`);
 					});
 				}
 			}
@@ -1147,13 +1154,18 @@ export class RecipeView extends TextFileView {
 		setIcon(btn, "chef-hat");
 
 		btn.addEventListener("click", () => {
-			if (settings.markCookedAskDate) {
-				new MarkCookedModal(this.app, (date) =>
-					this.markAsCooked(file, date, settings),
+			if (settings.trackCookHistory || settings.markCookedAskDate) {
+				new MarkCookedModal(
+					this.app,
+					{
+						showNotes: settings.trackCookHistory && settings.cookHistoryPromptNotes,
+						showImage: settings.trackCookHistory && settings.cookHistoryTrackImages,
+					},
+					(date, notes, image) => this.markAsCooked(file, date, notes, image, settings),
 				).open();
 			} else {
 				const today = localDateISO();
-				void this.markAsCooked(file, today, settings);
+				void this.markAsCooked(file, today, "", null, settings);
 			}
 		});
 	}
@@ -1161,9 +1173,38 @@ export class RecipeView extends TextFileView {
 	private async markAsCooked(
 		file: TFile,
 		date: string,
+		notes: string,
+		image: SelectedImage | null,
 		settings: MiseFlowSettings,
 	): Promise<void> {
 		const { newCount } = await stampRecipeCooked(this.app, file, date, settings);
+
+		if (settings.trackCookHistory) {
+			let imageLink: string | null = null;
+			if (image) {
+				let imageFile: TFile;
+				if (image.type === "upload") {
+					const fm = this.app.fileManager as typeof this.app.fileManager & {
+						getAvailablePathForAttachment(name: string, sourcePath: string): Promise<string>;
+					};
+					const attachPath = await fm.getAvailablePathForAttachment(image.name, file.path);
+					imageFile = await this.app.vault.createBinary(attachPath, image.data);
+				} else {
+					imageFile = image.file;
+				}
+				imageLink = `![[${imageFile.path}]]`;
+			}
+
+			await appendCookHistoryEntry(
+				this.app,
+				file,
+				date,
+				notes,
+				settings.cookHistoryHeading,
+				imageLink,
+			);
+		}
+
 		if (newCount !== null) {
 			new Notice(`Marked "${file.basename}" as cooked. Total: ${newCount} time${newCount === 1 ? "" : "s"}.`);
 		} else {
@@ -1694,3 +1735,4 @@ function titleCase(name: string): string {
 		(_match, sep: string, ch: string) => `${sep}${ch.toUpperCase()}`,
 	);
 }
+

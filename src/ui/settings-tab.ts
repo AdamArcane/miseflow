@@ -4,7 +4,6 @@ import {
 	Plugin,
 	PluginSettingTab,
 	Setting,
-	TFolder,
 	setIcon,
 } from "obsidian";
 import { FileSuggest, FolderSuggest } from "./folder-suggest";
@@ -25,7 +24,7 @@ import {
 	DEFAULT_SETTINGS,
 	MiseFlowSettings,
 } from "../settings";
-import { BadgeColor, BadgeType, CategoryOverride, CustomBadge } from "../types";
+import { BadgeColor, CategoryOverride, CustomBadge } from "../types";
 
 export interface SettingsHost {
 	app: App;
@@ -305,7 +304,7 @@ class SeparatorEditModal extends Modal {
 				t.setValue(this.char).onChange(v => {
 					this.char = v || "·";
 					presetRow.querySelectorAll(".mise-separator-preset-btn").forEach(b => b.classList.remove("is-active"));
-					const match = presetRow.querySelector(`.mise-separator-preset-btn`) as HTMLButtonElement | null;
+					presetRow.querySelector(`.mise-separator-preset-btn`);
 					// Highlight preset button if the typed value matches one
 					presetRow.querySelectorAll<HTMLButtonElement>(".mise-separator-preset-btn").forEach(b => {
 						if (b.textContent === v) b.classList.add("is-active");
@@ -364,6 +363,42 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 			attr: { target: "_blank", rel: "noopener" },
 		});
 
+		// ── Recipe Library ───────────────────────────────────────────────
+		new Setting(containerEl).setName("Recipe library").setHeading();
+
+		{
+			const s = new Setting(containerEl)
+				.setName("Recipe folders")
+				.setDesc(
+					"Folders the plugin scans for recipe notes. Leave empty to scan the entire vault.",
+				);
+			s.settingEl.addClass("mise-settings-has-list");
+			this.renderFolderList(
+				s.settingEl,
+				this.host.settings.recipeFolders,
+				async (folders) => {
+					this.host.settings.recipeFolders = folders;
+					await this.host.saveSettings();
+				},
+			);
+		}
+
+		new Setting(containerEl)
+			.setName("Recipe type value")
+			.setDesc(
+				"Notes whose frontmatter `type` matches this value are treated as recipes. Used for auto-open and the recipe library.",
+			)
+			.addText((text) =>
+				text
+					.setPlaceholder("Recipe")
+					.setValue(this.host.settings.recipeTypeValue)
+					.onChange(async (value) => {
+						this.host.settings.recipeTypeValue =
+							value.trim() || "recipe";
+						await this.host.saveSettings();
+					}),
+			);
+
 		// ── Notes & Storage ──────────────────────────────────────────────
 		new Setting(containerEl).setName("Notes & storage").setHeading();
 
@@ -384,6 +419,25 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 					await this.host.saveSettings();
 				});
 			});
+
+		new Setting(containerEl)
+			.setName("Grocery list note")
+			.setDesc(createMomentDesc("Vault-relative path of the note where your grocery list is stored."))
+			.addText((text) => {
+				text
+					.setPlaceholder("Grocery list.md")
+					.setValue(this.host.settings.groceryListNotePath)
+					.onChange(async (value) => {
+						this.host.settings.groceryListNotePath =
+							value.trim() || "Grocery List.md";
+						await this.host.saveSettings();
+					});
+				new FileSuggest(this.app, text.inputEl, async (path) => {
+					this.host.settings.groceryListNotePath = path;
+					await this.host.saveSettings();
+				});
+			});
+
 
 		// Declare first so the toggle's onChange closure can reference it.
 		// The Setting itself is appended to the DOM after the toggle below.
@@ -422,23 +476,6 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 		tagFilterSetting.settingEl.style.display =
 			this.host.settings.autoAddIngredientsOnSync ? "" : "none";
 
-		new Setting(containerEl)
-			.setName("Grocery list note")
-			.setDesc(createMomentDesc("Vault-relative path of the note where your grocery list is stored."))
-			.addText((text) => {
-				text
-					.setPlaceholder("Grocery list.md")
-					.setValue(this.host.settings.groceryListNotePath)
-					.onChange(async (value) => {
-						this.host.settings.groceryListNotePath =
-							value.trim() || "Grocery List.md";
-						await this.host.saveSettings();
-					});
-				new FileSuggest(this.app, text.inputEl, async (path) => {
-					this.host.settings.groceryListNotePath = path;
-					await this.host.saveSettings();
-				});
-			});
 
 		// ── Recipe Import ─────────────────────────────────────────────────
 		new Setting(containerEl).setName("Recipe import").setHeading();
@@ -483,41 +520,6 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 				});
 			});
 
-		// ── Recipe Library ───────────────────────────────────────────────
-		new Setting(containerEl).setName("Recipe library").setHeading();
-
-		{
-			const s = new Setting(containerEl)
-				.setName("Recipe folders")
-				.setDesc(
-					"Folders the plugin scans for recipe notes. Leave empty to scan the entire vault.",
-				);
-			s.settingEl.addClass("mise-settings-has-list");
-			this.renderFolderList(
-				s.settingEl,
-				this.host.settings.recipeFolders,
-				async (folders) => {
-					this.host.settings.recipeFolders = folders;
-					await this.host.saveSettings();
-				},
-			);
-		}
-
-		new Setting(containerEl)
-			.setName("Recipe type value")
-			.setDesc(
-				"Notes whose frontmatter `type` matches this value are treated as recipes. Used for auto-open and the recipe library.",
-			)
-			.addText((text) =>
-				text
-					.setPlaceholder("Recipe")
-					.setValue(this.host.settings.recipeTypeValue)
-					.onChange(async (value) => {
-						this.host.settings.recipeTypeValue =
-							value.trim() || "recipe";
-						await this.host.saveSettings();
-					}),
-			);
 
 
 		// ── Recipe View ─────────────────────────────────────────────────
@@ -967,6 +969,67 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 						.setValue(this.host.settings.trackCookedCount)
 						.onChange(async (value) => {
 							this.host.settings.trackCookedCount = value;
+							await this.host.saveSettings();
+						}),
+				);
+		}
+
+		new Setting(containerEl)
+			.setName("Track cook history")
+			.setDesc(
+				"Append a dated entry to a cook history section inside the note body each time it is marked as cooked.",
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.host.settings.trackCookHistory)
+					.onChange(async (value) => {
+						this.host.settings.trackCookHistory = value;
+						await this.host.saveSettings();
+						this.renderSettings();
+					}),
+			);
+
+		if (this.host.settings.trackCookHistory) {
+			new Setting(containerEl)
+				.setName("Cook history heading")
+				.setDesc(
+					"Heading name used for the cook history section in the note body. Should match the heading in your recipe notes where you want the history to be appended (case-insensitive).",
+				)
+				.addText((text) =>
+					text
+						.setPlaceholder("Cook history")
+						.setValue(this.host.settings.cookHistoryHeading)
+						.onChange(async (value) => {
+							this.host.settings.cookHistoryHeading =
+								value.trim() || "Cook History";
+							await this.host.saveSettings();
+						}),
+				);
+
+			new Setting(containerEl)
+				.setName("Prompt for notes when marking cooked")
+				.setDesc(
+					"Show a notes field in the mark-as-cooked modal. The text is appended to each history entry.",
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.host.settings.cookHistoryPromptNotes)
+						.onChange(async (value) => {
+							this.host.settings.cookHistoryPromptNotes = value;
+							await this.host.saveSettings();
+						}),
+				);
+
+			new Setting(containerEl)
+				.setName("Track photos")
+				.setDesc(
+					"Show an image picker in the mark-as-cooked modal. The selected photo is saved as a vault attachment and embedded in the history entry.",
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.host.settings.cookHistoryTrackImages)
+						.onChange(async (value) => {
+							this.host.settings.cookHistoryTrackImages = value;
 							await this.host.saveSettings();
 						}),
 				);

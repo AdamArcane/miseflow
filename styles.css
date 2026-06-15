@@ -1832,6 +1832,72 @@ settings:
 	color: var(--text-normal);
 }
 
+.mise-recipe-markdown > :first-child {
+	margin-top: 0;
+}
+
+/* Section headings — match the ingredients/instructions header style */
+.mise-recipe-markdown h1,
+.mise-recipe-markdown h2 {
+	margin: var(--size-4-4) 0 0;
+	padding-bottom: var(--size-2-2);
+	border-bottom: 1px solid color-mix(in srgb, var(--background-modifier-border) 45%, transparent);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-muted);
+	line-height: var(--line-height-tight);
+}
+
+.mise-recipe-markdown h3 {
+	margin: var(--size-4-2) 0 var(--size-2-1);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	color: var(--text-muted);
+}
+
+.mise-recipe-markdown h4,
+.mise-recipe-markdown h5,
+.mise-recipe-markdown h6 {
+	margin: var(--size-2-3) 0 var(--size-2-1);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	color: var(--text-muted);
+}
+
+.mise-recipe-markdown p {
+	font-size: var(--font-ui-small);
+	margin: var(--size-2-2) 0;
+	line-height: var(--line-height-normal);
+}
+
+.mise-recipe-markdown ul,
+.mise-recipe-markdown ol {
+	padding-left: var(--size-4-3);
+	margin: var(--size-2-2) 0;
+}
+
+.mise-recipe-markdown li {
+	font-size: var(--font-ui-small);
+	padding: var(--size-2-1) 0;
+	line-height: var(--line-height-normal);
+}
+
+.mise-recipe-markdown strong {
+	font-weight: var(--font-semibold);
+	color: var(--text-normal);
+}
+
+.mise-recipe-markdown a {
+	color: var(--text-accent);
+	text-decoration: none;
+}
+
+.mise-recipe-markdown a:hover {
+	text-decoration: underline;
+}
+
 /* ----------------------------------------------------------------------
  * Mobile tab view
  * --------------------------------------------------------------------*/
@@ -2115,6 +2181,7 @@ settings:
 	text-align: center;
 	font-size: var(--font-ui-small);
 }
+
 
 /* ----------------------------------------------------------------------
  * Suggest a meal modal
@@ -2815,3 +2882,33 @@ body.mise-compact-recipes .mise-recipe {
 
 .mise-input-md { width: 80px; }
 .mise-input-sm { width: 55px; }
+
+/* ── Mark as cooked modal ───────────────────────────────────────────────── */
+
+/* Notes textarea spans the full control column width */
+.mise-mark-cooked-notes {
+	width: 100%;
+	min-height: 80px;
+	resize: vertical;
+}
+
+/* Image section */
+.mise-mark-cooked-image-section {
+	padding: var(--size-4-2) 0;
+}
+
+.mise-mark-cooked-image-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--size-4-2);
+	margin-bottom: var(--size-4-2);
+}
+
+.mise-mark-cooked-preview-img {
+	display: block;
+	max-width: 100%;
+	max-height: 200px;
+	object-fit: contain;
+	border-radius: var(--radius-m);
+	margin-top: var(--size-4-2);
+}
