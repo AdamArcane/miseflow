@@ -1,11 +1,11 @@
 {
 	"id": "miseflow",
 	"name": "MiseFlow",
-	"version": "1.0.12",
 	"minAppVersion": "1.12.0",
 	"description": "Plan your meals, manage your grocery list, and view recipe notes as interactive cards.",
 	"author": "Adam Tommasi",
 	"authorUrl": "https://github.com/AdamArcane",
 	"fundingUrl": {},
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"version": "1.0.16"
 }

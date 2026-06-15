@@ -5,6 +5,7 @@ import {
 	TAbstractFile,
 	TFile,
 	WorkspaceLeaf,
+	createEl,
 	debounce,
 	setIcon,
 } from "obsidian";

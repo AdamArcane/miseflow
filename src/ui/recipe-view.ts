@@ -9,6 +9,7 @@ import {
 	EventRef,
 } from "obsidian";
 import { appendCookHistoryEntry, stampRecipeCooked } from "../grocery/selection";
+import { evalExpr } from "../utils/expr-eval";
 import { GroceryContribution } from "../grocery/note-writer";
 import { isHighGi, parseGiDictionary } from "../parser/glycemic";
 import {
@@ -138,16 +139,7 @@ function normalizeScalar(v: unknown, valueType: BadgeValueType): string {
 }
 
 function evalFormula(expr: string, fm: Record<string, unknown>): string | number | boolean | null {
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval
-		const fn = new Function(...Object.keys(fm), `"use strict"; return (${expr});`) as (...args: unknown[]) => unknown;
-		const result = fn(...Object.values(fm));
-		if (result == null) return null;
-		if (typeof result !== 'string' && typeof result !== 'number' && typeof result !== 'boolean') return null;
-		return result;
-	} catch {
-		return null;
-	}
+	return evalExpr(expr, fm);
 }
 
 function resolveBadgeValues(raw: unknown, badge: CustomBadge): string[] | null {
