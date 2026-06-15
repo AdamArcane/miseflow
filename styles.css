@@ -2725,3 +2725,93 @@ body.mise-compact-recipes .mise-recipe {
 	padding-top: 4px;
 	padding-bottom: 4px;
 }
+
+/* ── Import recipe modal ──────────────────────────────────────────────────── */
+
+.mise-import-tabs {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+.mise-tab-btn {
+	padding: 4px 14px;
+	border-radius: var(--radius-m);
+	border: 1px solid var(--background-modifier-border);
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.mise-tab-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.mise-tab-btn.mise-tab-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.mise-text-input {
+	width: 100%;
+	resize: vertical;
+	font-family: var(--font-text);
+	font-size: var(--font-ui-small);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: 6px 8px;
+	margin-bottom: 12px;
+	box-sizing: border-box;
+}
+
+.mise-review-textarea {
+	width: 100%;
+	resize: vertical;
+	font-family: var(--font-text);
+	font-size: var(--font-ui-small);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	padding: 6px 8px;
+	box-sizing: border-box;
+}
+
+.mise-review-columns {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 4px;
+}
+
+.mise-review-col {
+	flex: 1;
+	min-width: 0;
+}
+
+.mise-review-col-label {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	color: var(--text-muted);
+	margin-bottom: 2px;
+}
+
+.mise-review-col-hint {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	margin-bottom: 4px;
+}
+
+.mise-timing-label {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin-right: 3px;
+	user-select: none;
+}
+
+.mise-input-md { width: 80px; }
+.mise-input-sm { width: 55px; }

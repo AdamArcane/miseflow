@@ -1,5 +1,4 @@
 import {
-	AbstractInputSuggest,
 	App,
 	Modal,
 	Plugin,
@@ -8,6 +7,7 @@ import {
 	TFolder,
 	setIcon,
 } from "obsidian";
+import { FileSuggest, FolderSuggest } from "./folder-suggest";
 import { EditorState } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { defaultKeymap } from "@codemirror/commands";
@@ -35,33 +35,6 @@ export interface SettingsHost {
 }
 
 // ---------------------------------------------------------------------------
-// Folder autocomplete suggest
-// ---------------------------------------------------------------------------
-
-class FolderSuggest extends AbstractInputSuggest<TFolder> {
-	constructor(app: App, inputEl: HTMLInputElement) {
-		super(app, inputEl);
-	}
-
-	getSuggestions(query: string): TFolder[] {
-		return this.app.vault
-			.getAllFolders(true)
-			.filter((f) =>
-				f.path.toLowerCase().includes(query.toLowerCase()),
-			)
-			.sort((a, b) => a.path.localeCompare(b.path));
-	}
-
-	renderSuggestion(folder: TFolder, el: HTMLElement): void {
-		el.setText(folder.path || "(vault root)");
-	}
-
-	selectSuggestion(folder: TFolder): void {
-		this.setValue(folder.path);
-		this.close();
-	}
-}
-
 // ---------------------------------------------------------------------------
 // Badge edit modal
 // ---------------------------------------------------------------------------
@@ -397,7 +370,7 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Meal plan note")
 			.setDesc(createMomentDesc("Vault-relative path of the note where your meal plan is stored."))
-			.addText((text) =>
+			.addText((text) => {
 				text
 					.setPlaceholder("Meal plan.md")
 					.setValue(this.host.settings.mealPlanNotePath)
@@ -405,8 +378,12 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 						this.host.settings.mealPlanNotePath =
 							value.trim() || "Meal Plan.md";
 						await this.host.saveSettings();
-					}),
-			);
+					});
+				new FileSuggest(this.app, text.inputEl, async (path) => {
+					this.host.settings.mealPlanNotePath = path;
+					await this.host.saveSettings();
+				});
+			});
 
 		// Declare first so the toggle's onChange closure can reference it.
 		// The Setting itself is appended to the DOM after the toggle below.
@@ -448,7 +425,7 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Grocery list note")
 			.setDesc(createMomentDesc("Vault-relative path of the note where your grocery list is stored."))
-			.addText((text) =>
+			.addText((text) => {
 				text
 					.setPlaceholder("Grocery list.md")
 					.setValue(this.host.settings.groceryListNotePath)
@@ -456,8 +433,12 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 						this.host.settings.groceryListNotePath =
 							value.trim() || "Grocery List.md";
 						await this.host.saveSettings();
-					}),
-			);
+					});
+				new FileSuggest(this.app, text.inputEl, async (path) => {
+					this.host.settings.groceryListNotePath = path;
+					await this.host.saveSettings();
+				});
+			});
 
 		// ── Recipe Import ─────────────────────────────────────────────────
 		new Setting(containerEl).setName("Recipe import").setHeading();
@@ -467,15 +448,19 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 			.setDesc(
 				"Vault-relative folder where imported recipes are saved. Leave blank to use the first recipe folder.",
 			)
-			.addText((text) =>
+			.addText((text) => {
 				text
 					.setPlaceholder("Recipes")
 					.setValue(this.host.settings.importFolder)
 					.onChange(async (value) => {
 						this.host.settings.importFolder = value.trim();
 						await this.host.saveSettings();
-					}),
-			);
+					});
+				new FolderSuggest(this.app, text.inputEl, async (path) => {
+					this.host.settings.importFolder = path;
+					await this.host.saveSettings();
+				});
+			});
 
 		new Setting(containerEl)
 			.setName("Import template note")
@@ -484,15 +469,19 @@ export class MiseFlowSettingsTab extends PluginSettingTab {
 				"Use {{title}}, {{ingredients}}, {{instructions}}, {{image}}, {{url}}, {{servings}}, {{prepTime}}, {{cookTime}}, {{totalTime}}, {{description}}, {{date}} as tokens. " +
 				"Leave blank to use the built-in default. If you have Templater installed with 'trigger on file creation' enabled, Templater will also run on the new note automatically.",
 			)
-			.addText((text) =>
+			.addText((text) => {
 				text
 					.setPlaceholder("Templates/Recipe Import.md")
 					.setValue(this.host.settings.importTemplatePath)
 					.onChange(async (value) => {
 						this.host.settings.importTemplatePath = value.trim();
 						await this.host.saveSettings();
-					}),
-			);
+					});
+				new FileSuggest(this.app, text.inputEl, async (path) => {
+					this.host.settings.importTemplatePath = path;
+					await this.host.saveSettings();
+				});
+			});
 
 		// ── Recipe Library ───────────────────────────────────────────────
 		new Setting(containerEl).setName("Recipe library").setHeading();

@@ -165,7 +165,7 @@ export function registerCommands(host: CommandsHost): void {
 
 	plugin.addCommand({
 		id: "import-recipe",
-		name: "Import recipe from URL",
+		name: "Import recipe",
 		callback: () => {
 			new ImportRecipeModal(plugin.app, importHost).open();
 		},
