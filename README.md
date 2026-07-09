@@ -10,13 +10,19 @@
 </div>
 
 
+
+> [!WARNING]
+> MiseFlow has been archived and completely rewritten from the ground up. It is now called **Recipe Box** and can be found at https://github.com/AdamArcane/obsidian-recipebox
+
+
+
 # MiseFlow 🍳
 
 > *Mise en place* - the culinary practice of preparing everything before you cook.
 
 MiseFlow is an [Obsidian](https://obsidian.md) plugin that transforms your recipes from simple markdown into a complete meal planning, grocery shopping, and recipe management system.
 
-[Read the docs here](https://miseflow-docs.vercel.app/)
+
 
 ### Core Features
 - Import recipes from a URL
